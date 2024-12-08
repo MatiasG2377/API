@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from inventario.models import Categoria, Proveedor, Producto, ProductoProveedor, Cliente, Venta, ArticuloVenta, MovimientoInventario, Lote, Usuario, Sucursal, Kardex
 from inventario.API.serializador import categoriaSerializer, productoSerializer, proveedorSerializer, productoProveedorSerializer, clienteSerializer, ventaSerializer, articuloVentaSerializer, movimientoInventarioSerializer, loteSerializer, UserSerializer, usuarioSerializer, sucursalSerializer, KardexSerializer, UsuarioIdSerializer
 from django.contrib.auth.models import User
-
+from django.db import models
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -169,3 +169,80 @@ def obtener_id_usuario(request):
             {"error": "Usuario no encontrado."},
             status=status.HTTP_404_NOT_FOUND
         )
+    
+#------------------------------------------ Vistas para la generación de reportes --------------------------------
+from django.db.models import Sum
+from django.db.models.functions import TruncMonth
+
+
+class ProductosBajoStockAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        productos_bajo_stock = Producto.objects.filter(cantidad_producto__lte=models.F('minimo_producto'))
+        serializer = productoSerializer(productos_bajo_stock, many=True)
+        return Response(serializer.data)
+
+class VentasPorSucursalAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        ventas = Venta.objects.values('sucursal_venta__nombre_sucursal').annotate(total_ventas=Sum('total_venta'))
+        return Response(ventas)
+
+class HistorialKardexAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, producto_id):
+        kardex_entries = Kardex.objects.filter(producto_kardex_id=producto_id).order_by('-fecha_kardex')
+        serializer = KardexSerializer(kardex_entries, many=True)
+        return Response(serializer.data)
+    
+class VentasPorMesAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        ventas_por_mes = (
+            Venta.objects.annotate(mes=TruncMonth('fecha_venta'))
+            .values('mes')
+            .annotate(total_ventas=Sum('total_venta'))
+            .order_by('mes')
+        )
+        return Response(ventas_por_mes)
+    
+class TopProductosVendidosAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        top_productos = (
+            ArticuloVenta.objects.values('producto_articuloVenta__nombre_producto')
+            .annotate(cantidad_vendida=Sum('cantidad_articuloVenta'))
+            .order_by('-cantidad_vendida')[:5]
+        )
+        return Response(top_productos)
+    
+class IngresosPorSucursalAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        ingresos_por_sucursal = (
+            Venta.objects.values('sucursal_venta__nombre_sucursal')
+            .annotate(total_ingresos=Sum('total_venta'))
+            .order_by('-total_ingresos')
+        )
+        return Response(ingresos_por_sucursal)
+
+class MovimientosInventarioPorMesAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        movimientos_por_mes = (
+            MovimientoInventario.objects.annotate(mes=TruncMonth('fecha_movimientoInventario'))
+            .values('mes', 'tipo_movimientoInventario')
+            .annotate(total_movimientos=Sum('cantidad_movimientoInventario'))
+            .order_by('mes')
+        )
+        return Response(movimientos_por_mes)
+    
+class EvolucionStockProductoAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, producto_id):
+        kardex_entries = (
+            Kardex.objects.filter(producto_kardex_id=producto_id)
+            .order_by('fecha_kardex')
+            .values('fecha_kardex', 'saldo_cantidad_kardex')
+        )
+        return Response(kardex_entries)
