@@ -1,0 +1,82 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilo personalizado adicional */
+        body {
+            background-color: #f4f6f9;
+        }
+        header {
+            background-color: #2a3f54;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-gray-800 bg-gray-100">
+    <!-- Header -->
+    <header class="flex items-center justify-between px-6 py-4 text-white">
+        <h1 class="text-lg font-bold">Bienvenido al Panel de Administración</h1>
+        <nav class="space-x-4">
+            <a href="{% url 'admin:index' %}" class="hover:underline">Inicio</a>
+            <a href="#" class="hover:underline">Ver Sitio</a>
+            <a href="#" class="hover:underline">Cambiar Contraseña</a>
+            <a href="{% url 'admin:logout' %}" class="hover:underline">Cerrar Sesión</a>
+        </nav>
+    </header>
+
+    <!-- Contenedor principal -->
+    <div class="container mx-auto mt-6 px-4">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Acciones recientes -->
+            <aside class="col-span-1">
+                <div class="bg-white shadow-md rounded-lg p-4">
+                    <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Acciones recientes</h2>
+                    <ul>
+                        <li class="text-gray-600">No hay acciones recientes.</li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Panel de administración -->
+            <main class="col-span-1 lg:col-span-3">
+                {% block content %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for app in app_list %}
+                    <div class="bg-white shadow-md rounded-lg">
+                        <div class="bg-blue-600 text-white rounded-t-lg p-4">
+                            <h3 class="text-lg font-semibold">{{ app.name }}</h3>
+                        </div>
+                        <div class="p-4">
+                            <ul class="divide-y divide-gray-200">
+                                {% for model in app.models %}
+                                <li class="py-2 flex justify-between items-center">
+                                    <a href="{{ model.admin_url }}" class="text-blue-600 hover:underline">{{ model.name }}</a>
+                                    <div class="space-x-2">
+                                        <a href="{{ model.add_url }}" class="text-sm bg-green-500 text-white py-1 px-2 rounded hover:bg-green-600">+ Agregar</a>
+                                        <a href="{{ model.change_url }}" class="text-sm bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600">Cambiar</a>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-10 py-4 bg-gray-800 text-center text-white text-sm">
+        &copy; {{ current_year }} - Panel de Administración
+    </footer>
+</body>
+</html>
