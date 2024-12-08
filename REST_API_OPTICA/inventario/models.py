@@ -46,6 +46,10 @@ class Usuario(models.Model):
     activo_usuario = models.BooleanField(default=True)
     username_usuario = models.CharField(max_length=150, unique=True, null=True, blank=True)  # Nuevo campo
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['email_usuario'], name='idx_email_usuario'),
+        ]
     def __str__(self):
         return f"{self.nombre_usuario} {self.apellido_usuario} - {self.rol_usuario}"
 
@@ -98,6 +102,10 @@ class Producto(models.Model):
         default='Promedio'
     )
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['nombre_producto'], name='idx_nombre_producto'),
+        ]
     def clean(self):
         if self.minimo_producto > self.maximo_producto:
             raise ValidationError("El stock mínimo no puede ser mayor que el stock máximo.")
@@ -129,6 +137,10 @@ class Venta(models.Model):
     estado_venta = models.CharField(max_length=1, choices=ESTADO_VENTA_CHOICES, default='P')
     metodo_venta = models.CharField(max_length=255, blank=True, null=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['fecha_venta'], name='idx_fecha_venta'),
+        ]
     def __str__(self):
         return f"Venta #{self.id} - {self.sucursal_venta.nombre_sucursal}"
 
@@ -167,7 +179,13 @@ class ArticuloVenta(models.Model):
     cantidad_articuloVenta = models.IntegerField(null=False)
     pvp_articuloVenta = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     descuento_articuloVenta = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-
+    def clean(self):
+        super().clean()
+        if self.cantidad_articuloVenta > self.producto_articuloVenta.cantidad_producto:
+            raise ValidationError(
+                f"La cantidad ({self.cantidad_articuloVenta}) no puede ser mayor que el stock disponible "
+                f"({self.producto_articuloVenta.cantidad_producto}) del producto '{self.producto_articuloVenta.nombre_producto}'."
+            )
     def __str__(self):
         return f"Artículo {self.producto_articuloVenta.nombre_producto} en Venta #{self.venta_articuloVenta.id}"
 
@@ -199,6 +217,17 @@ class Kardex(models.Model):
     saldo_costo_kardex = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     referencia_kardex = models.TextField(blank=True, null=True)
     lote_kardex = models.ForeignKey(Lote, on_delete=models.SET_NULL, null=True, blank=True)
-
+    def clean(self):
+        super().clean()
+        # Si el movimiento es una salida, verifica que no se genere un saldo negativo
+        if self.tipo_kardex == 'Salida' and self.saldo_cantidad_kardex < self.cantidad_kardex:
+            raise ValidationError(
+                f"No puedes registrar una salida de {self.cantidad_kardex} unidades, "
+                f"ya que el saldo actual es de {self.saldo_cantidad_kardex} unidades."
+            )
+    class Meta:
+        indexes = [
+            models.Index(fields=['fecha_kardex'], name='idx_fecha_kardex'),
+        ]
     def __str__(self):
         return f"Kardex de {self.producto_kardex.nombre_producto} - {self.tipo_kardex} ({self.fecha_kardex})"
