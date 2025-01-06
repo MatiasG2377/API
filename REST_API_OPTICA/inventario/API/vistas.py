@@ -246,3 +246,163 @@ class EvolucionStockProductoAPIView(APIView):
             .values('fecha_kardex', 'saldo_cantidad_kardex')
         )
         return Response(kardex_entries)
+
+# Generación de reportes gráficos
+from rest_framework.parsers import JSONParser
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import io
+import base64
+from django.apps import apps
+from django.db import models
+from django.db.models.fields.related import ForeignKey
+from django.core.exceptions import FieldDoesNotExist
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework.exceptions import NotFound
+
+
+class GenerateCustomChartView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+
+        # Obtener el modelo especificado
+        model_name = data.get("model")
+        try:
+            Model = apps.get_model("inventario", model_name)  # Cambia 'inventario' por el nombre de tu aplicación
+        except LookupError:
+            return Response({"error": f"Modelo '{model_name}' no encontrado."}, status=400)
+
+        # Aplicar filtros
+        filters = data.get("filters", {})
+        queryset = Model.objects.filter(**filters)
+
+        # Obtener campos para los ejes
+        x_field = data.get("xField")
+        y_field = data.get("yField")
+        if not x_field or not y_field:
+            return Response({"error": "Los campos 'xField' y 'yField' son obligatorios."}, status=400)
+
+        def resolve_field(queryset, field_name, model):
+            field_parts = field_name.split('__')  # Separar niveles de relaciones
+            for i in range(len(field_parts) - 1):
+                # Excluir valores NULL en cada nivel de la relación
+                related_field = '__'.join(field_parts[:i + 1]) + "__isnull"
+                queryset = queryset.exclude(**{related_field: True})
+
+            last_field = field_parts[-1]  # Último campo a resolver
+            if len(field_parts) > 1:
+                # Si hay relaciones anidadas
+                data = queryset.values_list(field_name, flat=True)
+            else:
+                # Campo directo o FK en el nivel principal
+                try:
+                    field = model._meta.get_field(last_field)
+                    if isinstance(field, ForeignKey):
+                        # Obtener modelo relacionado
+                        related_model = field.related_model
+
+                        # Buscar un campo representativo (como nombre o descripción)
+                        preferred_fields = ["nombre", "descripcion", "titulo"]
+                        related_field_name = next(
+                            (f"{last_field}__{field.name}" for field in related_model._meta.fields
+                             if any(field.name.startswith(pref) for pref in preferred_fields)),
+                            None
+                        )
+
+                        if related_field_name:
+                            # Extraer datos del modelo relacionado
+                            data = queryset.values_list(related_field_name, flat=True)
+                        else:
+                            # Si no hay un campo representativo, usar el id
+                            data = queryset.values_list(last_field, flat=True)
+                    else:
+                        # Campo directo no relacionado
+                        data = queryset.values_list(last_field, flat=True)
+                except FieldDoesNotExist:
+                    return Response({"error": f"Campo '{last_field}' no encontrado."}, status=400)
+
+            # Reemplazar valores NULL por un valor predeterminado
+            return [value if value is not None else "No cuenta con datos" for value in data]
+
+        try:
+            # Procesar datos para los campos X e Y
+            x_data = resolve_field(queryset, x_field, Model)
+            y_data = resolve_field(queryset, y_field, Model)
+
+            # Filtrar combinaciones donde cualquiera sea NULL
+            x_data, y_data = zip(*[
+                (x, y) for x, y in zip(x_data, y_data) if x is not None and y is not None
+            ])
+        except ValueError:
+            return Response({"error": "Los datos para el gráfico están vacíos o contienen valores nulos."}, status=400)
+
+        # Validar datos no vacíos
+        if not x_data or not y_data:
+            return Response({"error": "No hay datos suficientes para generar el gráfico."}, status=400)
+
+        # Generar el gráfico
+        chart_type = data.get("chartType", "bar")
+        plt.figure(figsize=(10, 6))
+        if chart_type == "bar":
+            plt.bar(x_data, y_data, color=data["options"].get("color", "#2196F3"))
+        elif chart_type == "line":
+            plt.plot(x_data, y_data, marker="o", color=data["options"].get("color", "#2196F3"))
+        elif chart_type == "scatter":
+            plt.scatter(x_data, y_data, color=data["options"].get("color", "#2196F3"))
+        elif chart_type == "histogram":
+            plt.hist(y_data, bins=10, edgecolor="black", color=data["options"].get("color", "#2196F3"))
+            plt.xlabel(data["options"].get("xLabel", y_field))
+            plt.ylabel("Frecuencia")
+        else:
+            return Response({"error": f"Tipo de gráfico '{chart_type}' no soportado."}, status=400)
+
+        # Configurar títulos y etiquetas
+        plt.title(data["options"].get("title", "Gráfico Personalizado"))
+        plt.xlabel(data["options"].get("xLabel", x_field))
+        plt.ylabel(data["options"].get("yLabel", y_field))
+
+        # Rotar las etiquetas del eje X para que sean legibles
+        plt.xticks(rotation=45, ha="right")  # Rotación de 45 grados, alineación a la derecha
+
+        # Convertir el gráfico a Base64
+        img = io.BytesIO()
+        plt.savefig(img, format="png")
+        img.seek(0)
+        plt.close()
+
+        img_base64 = base64.b64encode(img.getvalue()).decode("utf-8")
+        return Response({"image": img_base64})
+
+
+class ModelFieldsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, model_name, *args, **kwargs):
+        try:
+            # Obtener el modelo dinámicamente
+            Model = apps.get_model('inventario', model_name)  # Cambia 'inventario' por el nombre de tu aplicación
+        except LookupError:
+            raise NotFound(f"El modelo '{model_name}' no existe.")
+
+        # Obtener los nombres de los campos del modelo
+        fields = [field.name for field in Model._meta.fields]
+
+        return Response({"fields": fields})
+
+
+class ListModelsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        # Obtén todos los modelos registrados en la aplicación
+        app_name = 'inventario'  # Cambia por el nombre de tu aplicación
+        models = apps.get_app_config(app_name).get_models()
+
+        # Devuelve solo los nombres de los modelos
+        model_names = [model.__name__ for model in models]
+        return Response({"models": model_names})

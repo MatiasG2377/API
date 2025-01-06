@@ -6,7 +6,7 @@ from inventario.API.vistas import (
     loteViewSet, UserViewSet, usuarioViewSet, sucursalViewSet, ProductoFiltradoPorCategoria, kardexViewSet,
     KardexPorProductoAPIView, obtener_id_usuario, ProductosBajoStockAPIView, VentasPorSucursalAPIView, HistorialKardexAPIView,
     VentasPorMesAPIView, TopProductosVendidosAPIView, IngresosPorSucursalAPIView,MovimientosInventarioPorMesAPIView,
-    EvolucionStockProductoAPIView
+    EvolucionStockProductoAPIView, GenerateCustomChartView, ModelFieldsView, ListModelsView
 )
 
 
@@ -37,6 +37,10 @@ urlpatterns = [
     path('ingresos/por_sucursal/', IngresosPorSucursalAPIView.as_view(), name='ingresos_por_sucursal'),
     path('movimientos/inventario_por_mes/', MovimientosInventarioPorMesAPIView.as_view(), name='movimientos_inventario_por_mes'),
     path('evolucion/stock/<int:producto_id>/', EvolucionStockProductoAPIView.as_view(), name='evolucion_stock_producto'),
+    path('generate-chart/', GenerateCustomChartView.as_view(), name='generate-chart'),
+    path('model-fields/<str:model_name>/', ModelFieldsView.as_view(), name='model-fields'),
+    path('models/', ListModelsView.as_view(), name='list-models'),
+
 ]
 
 urlpatterns += router.urls
