@@ -77,6 +77,8 @@ class kardexViewSet(viewsets.ModelViewSet):
     queryset = Kardex.objects.all()
     serializer_class = KardexSerializer
 
+
+
 class ProductoListView(APIView):
     permission_classes = [AllowAny]
 
@@ -97,7 +99,7 @@ class RegisterView(APIView):
 
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         print("Headers:", request.headers)
@@ -406,3 +408,14 @@ class ListModelsView(APIView):
         # Devuelve solo los nombres de los modelos
         model_names = [model.__name__ for model in models]
         return Response({"models": model_names})
+
+
+@api_view(['GET'])
+def buscar_cliente_por_ci(request):
+    ci = request.query_params.get('ci_cliente')
+    if not ci:
+        return Response({'error': 'Se requiere el parámetro ci_cliente'}, status=400)
+
+    clientes = Cliente.objects.filter(ci_cliente=ci)
+    serializer = clienteSerializer(clientes, many=True)
+    return Response(serializer.data)

@@ -6,7 +6,7 @@ from inventario.API.vistas import (
     loteViewSet, UserViewSet, usuarioViewSet, sucursalViewSet, ProductoFiltradoPorCategoria, kardexViewSet,
     KardexPorProductoAPIView, obtener_id_usuario, ProductosBajoStockAPIView, VentasPorSucursalAPIView, HistorialKardexAPIView,
     VentasPorMesAPIView, TopProductosVendidosAPIView, IngresosPorSucursalAPIView,MovimientosInventarioPorMesAPIView,
-    EvolucionStockProductoAPIView, GenerateCustomChartView, ModelFieldsView, ListModelsView
+    EvolucionStockProductoAPIView, GenerateCustomChartView, ModelFieldsView, ListModelsView, buscar_cliente_por_ci
 )
 
 
@@ -40,7 +40,7 @@ urlpatterns = [
     path('generate-chart/', GenerateCustomChartView.as_view(), name='generate-chart'),
     path('model-fields/<str:model_name>/', ModelFieldsView.as_view(), name='model-fields'),
     path('models/', ListModelsView.as_view(), name='list-models'),
-
+    path('cliente/buscar_por_ci/', buscar_cliente_por_ci),
 ]
 
 urlpatterns += router.urls
