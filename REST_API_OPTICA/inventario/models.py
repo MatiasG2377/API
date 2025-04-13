@@ -231,3 +231,103 @@ class Kardex(models.Model):
         ]
     def __str__(self):
         return f"Kardex de {self.producto_kardex.nombre_producto} - {self.tipo_kardex} ({self.fecha_kardex})"
+class Paciente(models.Model):
+    apellidos = models.CharField(max_length=255, blank=True, null=True)
+    nombres = models.CharField(max_length=255, blank=True, null=True)
+    fecha_nacimiento = models.DateField(blank=True, null=True)
+    ocupacion = models.CharField(max_length=255, blank=True, null=True)
+    direccion = models.TextField(blank=True, null=True)
+    fecha_registro = models.DateField(auto_now_add=True)
+    telefono_celular = models.CharField(max_length=20, blank=True, null=True)
+    antecedentes = models.TextField(blank=True, null=True)
+
+
+class FichaMedica(models.Model):
+    paciente = models.ForeignKey(Paciente, on_delete=models.SET_NULL, null=True)
+    usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+    causa = models.TextField(blank=True, null=True)
+    observaciones = models.TextField(blank=True, null=True)
+    altura = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    material = models.CharField(max_length=100, blank=True, null=True)
+
+    # RX distancia OD
+    rx_distancia_od_av = models.CharField(max_length=20, blank=True, null=True)
+    rx_distancia_od_esfera = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rx_distancia_od_cilindro = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rx_distancia_od_eje = models.IntegerField(blank=True, null=True)
+    rx_distancia_od_dnp = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+
+    # RX distancia OI
+    rx_distancia_oi_av = models.CharField(max_length=20, blank=True, null=True)
+    rx_distancia_oi_esfera = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rx_distancia_oi_cilindro = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rx_distancia_oi_eje = models.IntegerField(blank=True, null=True)
+    rx_distancia_oi_dnp = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+
+    # RX add OD
+    rx_add_od_av = models.CharField(max_length=20, blank=True, null=True)
+    rx_add_od_esfera = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rx_add_od_cilindro = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rx_add_od_eje = models.IntegerField(blank=True, null=True)
+    rx_add_od_dnp = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+
+    # RX add OI
+    rx_add_oi_av = models.CharField(max_length=20, blank=True, null=True)
+    rx_add_oi_esfera = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rx_add_oi_cilindro = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rx_add_oi_eje = models.IntegerField(blank=True, null=True)
+    rx_add_oi_dnp = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+
+    # RX lectura OD
+    rx_lectura_od_av = models.CharField(max_length=20, blank=True, null=True)
+    rx_lectura_od_esfera = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rx_lectura_od_cilindro = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rx_lectura_od_eje = models.IntegerField(blank=True, null=True)
+
+    # RX lectura OI
+    rx_lectura_oi_av = models.CharField(max_length=20, blank=True, null=True)
+    rx_lectura_oi_esfera = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rx_lectura_oi_cilindro = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rx_lectura_oi_eje = models.IntegerField(blank=True, null=True)
+
+    # ESQ OD
+    esq_od_sc = models.CharField(max_length=20, blank=True, null=True)
+    esq_od_cc = models.CharField(max_length=20, blank=True, null=True)
+    esq_od_esfera = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    esq_od_cilindro = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    esq_od_eje = models.IntegerField(blank=True, null=True)
+
+    # ESQ OI
+    esq_oi_sc = models.CharField(max_length=20, blank=True, null=True)
+    esq_oi_cc = models.CharField(max_length=20, blank=True, null=True)
+    esq_oi_esfera = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    esq_oi_cilindro = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    esq_oi_eje = models.IntegerField(blank=True, null=True)
+
+    # RS OD
+    rs_od_esfera = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rs_od_cilindro = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rs_od_eje = models.IntegerField(blank=True, null=True)
+    rs_od_correccion = models.CharField(max_length=100, blank=True, null=True)
+
+    # RS OI
+    rs_oi_esfera = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rs_oi_cilindro = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rs_oi_eje = models.IntegerField(blank=True, null=True)
+    rs_oi_correccion = models.CharField(max_length=100, blank=True, null=True)
+
+    # RS ADD
+    rs_add_esfera = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rs_add_cilindro = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rs_add_eje = models.IntegerField(blank=True, null=True)
+    rs_add_correccion = models.CharField(max_length=100, blank=True, null=True)
+
+
+class Abono(models.Model):
+    venta = models.ForeignKey(Venta, on_delete=models.SET_NULL, null=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True)
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    fecha = models.DateTimeField(auto_now_add=True)
+    metodo_pago = models.CharField(max_length=100)
+

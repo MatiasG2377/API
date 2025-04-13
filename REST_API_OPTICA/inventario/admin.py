@@ -1,5 +1,5 @@
 from django.contrib import admin
-from inventario.models import Categoria, Proveedor, Producto, ProductoProveedor, Cliente, Venta, ArticuloVenta, MovimientoInventario, Lote, Usuario, Sucursal, Kardex
+from inventario.models import Categoria, Proveedor, Producto, ProductoProveedor, Cliente, Venta, ArticuloVenta, MovimientoInventario, Lote, Usuario, Sucursal, Kardex, FichaMedica, Abono, Paciente
 from django.contrib.auth.models import User
 
 # Cambiar el título y encabezados del panel
@@ -17,3 +17,6 @@ admin.site.register(Lote)
 admin.site.register(Usuario)
 admin.site.register(Sucursal)
 admin.site.register(Kardex)
+admin.site.register(FichaMedica)
+admin.site.register(Abono)
+admin.site.register(Paciente)

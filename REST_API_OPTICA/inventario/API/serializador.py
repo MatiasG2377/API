@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from inventario.models import Categoria, Proveedor, Producto, ProductoProveedor, Cliente, Venta, ArticuloVenta, MovimientoInventario, Lote, Usuario, Sucursal, Kardex
+from inventario.models import Categoria, Proveedor, Producto, ProductoProveedor, Cliente, Venta, ArticuloVenta, MovimientoInventario, Lote, Usuario, Sucursal, Kardex, FichaMedica, Abono, Paciente
 from rest_framework.views import APIView
 
 
@@ -61,6 +61,18 @@ class sucursalSerializer(serializers.ModelSerializer):
         model = Sucursal
         fields = '__all__'
 
+class FichaMedicaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FichaMedica
+        fields = '__all__'
+class AbonoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Abono
+        fields = '__all__'
+class PacienteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Paciente
+        fields = '__all__'
 
 #! Manejo del login
 from django.contrib.auth.password_validation import validate_password

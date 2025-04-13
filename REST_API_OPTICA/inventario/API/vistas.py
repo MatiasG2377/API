@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from inventario.models import Categoria, Proveedor, Producto, ProductoProveedor, Cliente, Venta, ArticuloVenta, MovimientoInventario, Lote, Usuario, Sucursal, Kardex
-from inventario.API.serializador import categoriaSerializer, productoSerializer, proveedorSerializer, productoProveedorSerializer, clienteSerializer, ventaSerializer, articuloVentaSerializer, movimientoInventarioSerializer, loteSerializer, UserSerializer, usuarioSerializer, sucursalSerializer, KardexSerializer, UsuarioIdSerializer
+from inventario.models import Categoria, Proveedor, Producto, ProductoProveedor, Cliente, Venta, ArticuloVenta, MovimientoInventario, Lote, Usuario, Sucursal, Kardex, Paciente, FichaMedica, Abono
+from inventario.API.serializador import categoriaSerializer, productoSerializer, proveedorSerializer, productoProveedorSerializer, clienteSerializer, ventaSerializer, articuloVentaSerializer, movimientoInventarioSerializer, loteSerializer, UserSerializer, usuarioSerializer, sucursalSerializer, KardexSerializer, UsuarioIdSerializer, PacienteSerializer, FichaMedicaSerializer, AbonoSerializer
 from django.contrib.auth.models import User
 from django.db import models
 from rest_framework.views import APIView
@@ -77,7 +77,22 @@ class kardexViewSet(viewsets.ModelViewSet):
     queryset = Kardex.objects.all()
     serializer_class = KardexSerializer
 
-
+class PacienteListView(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = Paciente.objects.all()
+    serializer_class = PacienteSerializer
+class FichaMedicaListView(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = FichaMedica.objects.all()
+    serializer_class = FichaMedicaSerializer
+class AbonoListView(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = Abono.objects.all()
+    serializer_class = AbonoSerializer
+    def get(self, request):
+        pacientes = Paciente.objects.all()
+        serializer = PacienteSerializer(pacientes, many=True)
+        return Response(serializer.data)
 
 class ProductoListView(APIView):
     permission_classes = [AllowAny]

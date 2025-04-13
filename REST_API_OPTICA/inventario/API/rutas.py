@@ -6,7 +6,7 @@ from inventario.API.vistas import (
     loteViewSet, UserViewSet, usuarioViewSet, sucursalViewSet, ProductoFiltradoPorCategoria, kardexViewSet,
     KardexPorProductoAPIView, obtener_id_usuario, ProductosBajoStockAPIView, VentasPorSucursalAPIView, HistorialKardexAPIView,
     VentasPorMesAPIView, TopProductosVendidosAPIView, IngresosPorSucursalAPIView,MovimientosInventarioPorMesAPIView,
-    EvolucionStockProductoAPIView, GenerateCustomChartView, ModelFieldsView, ListModelsView, buscar_cliente_por_ci
+    EvolucionStockProductoAPIView, GenerateCustomChartView, ModelFieldsView, ListModelsView, buscar_cliente_por_ci, FichaMedicaListView, PacienteListView, AbonoListView
 )
 
 
@@ -25,6 +25,9 @@ router.register('user', UserViewSet, basename='users')
 router.register('usuario', usuarioViewSet, basename='usuarios')
 router.register('sucursal', sucursalViewSet, basename='sucursales')
 router.register(r'kardex', kardexViewSet, basename='kardex')
+router.register('fichamedica', FichaMedicaListView, basename='fichamedica')
+router.register('paciente', PacienteListView, basename='paciente')
+router.register('abono', AbonoListView, basename='abono')
 urlpatterns = [
     path('productos-filtrados/', ProductoFiltradoPorCategoria.as_view(), name='productos-filtrados'),
     path('kardex/<int:producto_id>/', KardexPorProductoAPIView.as_view(), name='kardex-por-producto'),
