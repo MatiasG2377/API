@@ -6,7 +6,7 @@ from inventario.API.vistas import (
     loteViewSet, UserViewSet, usuarioViewSet, sucursalViewSet, ProductoFiltradoPorCategoria, kardexViewSet,
     KardexPorProductoAPIView, obtener_id_usuario, ProductosBajoStockAPIView, VentasPorSucursalAPIView, HistorialKardexAPIView,
     VentasPorMesAPIView, TopProductosVendidosAPIView, IngresosPorSucursalAPIView,MovimientosInventarioPorMesAPIView,
-    EvolucionStockProductoAPIView, GenerateCustomChartView, ModelFieldsView, ListModelsView, buscar_cliente_por_ci, FichaMedicaListView, PacienteListView, AbonoListView
+    EvolucionStockProductoAPIView, GenerateCustomChartView, ModelFieldsView, ListModelsView, buscar_cliente_por_ci, FichaMedicaListView, PacienteListView, AbonoViewSet, obtener_paciente_por_ci
 )
 
 
@@ -27,7 +27,7 @@ router.register('sucursal', sucursalViewSet, basename='sucursales')
 router.register(r'kardex', kardexViewSet, basename='kardex')
 router.register('fichamedica', FichaMedicaListView, basename='fichamedica')
 router.register('paciente', PacienteListView, basename='paciente')
-router.register('abono', AbonoListView, basename='abono')
+router.register(r'abono', AbonoViewSet, basename='abono')
 urlpatterns = [
     path('productos-filtrados/', ProductoFiltradoPorCategoria.as_view(), name='productos-filtrados'),
     path('kardex/<int:producto_id>/', KardexPorProductoAPIView.as_view(), name='kardex-por-producto'),
@@ -44,6 +44,8 @@ urlpatterns = [
     path('model-fields/<str:model_name>/', ModelFieldsView.as_view(), name='model-fields'),
     path('models/', ListModelsView.as_view(), name='list-models'),
     path('cliente/buscar_por_ci/', buscar_cliente_por_ci),
+    path('pacientes/ci/<str:ci>/', obtener_paciente_por_ci),
+
 ]
 
 urlpatterns += router.urls

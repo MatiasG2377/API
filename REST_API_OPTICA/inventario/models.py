@@ -232,6 +232,7 @@ class Kardex(models.Model):
     def __str__(self):
         return f"Kardex de {self.producto_kardex.nombre_producto} - {self.tipo_kardex} ({self.fecha_kardex})"
 class Paciente(models.Model):
+    ci_paciente = models.CharField(max_length=20, unique=True)  # <-- CI agregado
     apellidos = models.CharField(max_length=255, blank=True, null=True)
     nombres = models.CharField(max_length=255, blank=True, null=True)
     fecha_nacimiento = models.DateField(blank=True, null=True)

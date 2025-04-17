@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from inventario.models import Categoria, Proveedor, Producto, ProductoProveedor, Cliente, Venta, ArticuloVenta, MovimientoInventario, Lote, Usuario, Sucursal, Kardex, Paciente, FichaMedica, Abono
-from inventario.API.serializador import categoriaSerializer, productoSerializer, proveedorSerializer, productoProveedorSerializer, clienteSerializer, ventaSerializer, articuloVentaSerializer, movimientoInventarioSerializer, loteSerializer, UserSerializer, usuarioSerializer, sucursalSerializer, KardexSerializer, UsuarioIdSerializer, PacienteSerializer, FichaMedicaSerializer, AbonoSerializer
+from inventario.API.serializador import categoriaSerializer, productoSerializer, proveedorSerializer, productoProveedorSerializer, clienteSerializer, ventaSerializer, articuloVentaSerializer, movimientoInventarioSerializer, loteSerializer, UserSerializer, usuarioSerializer, sucursalSerializer, KardexSerializer, UsuarioIdSerializer, PacienteSerializer, FichaMedicaSerializer, AbonoReadSerializer, AbonoWriteSerializer 
 from django.contrib.auth.models import User
 from django.db import models
 from rest_framework.views import APIView
@@ -85,14 +85,6 @@ class FichaMedicaListView(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     queryset = FichaMedica.objects.all()
     serializer_class = FichaMedicaSerializer
-class AbonoListView(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
-    queryset = Abono.objects.all()
-    serializer_class = AbonoSerializer
-    def get(self, request):
-        pacientes = Paciente.objects.all()
-        serializer = PacienteSerializer(pacientes, many=True)
-        return Response(serializer.data)
 
 class ProductoListView(APIView):
     permission_classes = [AllowAny]
@@ -434,3 +426,25 @@ def buscar_cliente_por_ci(request):
     clientes = Cliente.objects.filter(ci_cliente=ci)
     serializer = clienteSerializer(clientes, many=True)
     return Response(serializer.data)
+
+
+class AbonoViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = Abono.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method in ['POST', 'PUT', 'PATCH']:
+            return AbonoWriteSerializer
+        return AbonoReadSerializer
+
+@api_view(['GET'])
+def obtener_paciente_por_ci(request, ci):
+    try:
+        paciente = Paciente.objects.get(ci_paciente=ci)
+        fichas = FichaMedica.objects.filter(paciente=paciente).order_by('-fecha')[:5]
+        return Response({
+            "paciente": PacienteSerializer(paciente).data,
+            "historial_fichas": FichaMedicaSerializer(fichas, many=True).data
+        })
+    except Paciente.DoesNotExist:
+        return Response({"detail": "Paciente no encontrado"}, status=status.HTTP_404_NOT_FOUND)

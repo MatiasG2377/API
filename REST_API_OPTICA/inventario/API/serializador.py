@@ -65,10 +65,7 @@ class FichaMedicaSerializer(serializers.ModelSerializer):
     class Meta:
         model = FichaMedica
         fields = '__all__'
-class AbonoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Abono
-        fields = '__all__'
+
 class PacienteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Paciente
@@ -138,3 +135,34 @@ class UsuarioIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = ['id']  # Solo necesitas el campo 'id'
+
+# serializers.py
+
+# Para GETs (mostrar con info anidada)
+class ClienteAbonoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cliente
+        fields = ['id', 'nombre_cliente']
+
+class VentaAbonoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Venta
+        fields = ['id', 'total_venta']
+
+class AbonoReadSerializer(serializers.ModelSerializer):
+    cliente = ClienteAbonoSerializer(read_only=True)
+    venta = VentaAbonoSerializer(read_only=True)
+
+    class Meta:
+        model = Abono
+        fields = '__all__'
+
+
+# Para POSTs (espera IDs)
+class AbonoWriteSerializer(serializers.ModelSerializer):
+    cliente = serializers.PrimaryKeyRelatedField(queryset=Cliente.objects.all())
+    venta = serializers.PrimaryKeyRelatedField(queryset=Venta.objects.all())
+
+    class Meta:
+        model = Abono
+        fields = '__all__'
