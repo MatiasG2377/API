@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError  # si usas clean()
 
 ROLES_USUARIO_CHOICES = [
     ('Administrador', 'Administrador'),
@@ -8,13 +9,16 @@ ROLES_USUARIO_CHOICES = [
 
 class Sucursal(models.Model):
     nombre_sucursal = models.TextField(null=False)
-    direccion_sucursal = models.TextField(null=False)
+    direccion_sucursal = models.TextField(null=True)
     telefono_sucursal = models.TextField(blank=True, null=True)
     activo_sucursal = models.BooleanField(default=True)
     fecha_creacion_sucursal = models.DateTimeField(auto_now_add=True)
-
+    class Meta:
+        indexes = [
+            models.Index(fields=['nombre_sucursal'], name='idx_nombre_sucursal'),
+        ]
     def __str__(self):
-        return self.nombre_sucursal
+        return f"{self.id} | {self.nombre_sucursal}"
 
 class Usuario(models.Model):
     nombre_usuario = models.TextField(null=False)
@@ -30,7 +34,9 @@ class Usuario(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['email_usuario'], name='idx_email_usuario'),
+            models.Index(fields=['nombre_usuario'], name='idx_nombre_usuario'),
+            models.Index(fields=['apellido_usuario'], name='idx_apellido_usuario'),
         ]
 
     def __str__(self):
-        return f"{self.nombre_usuario} {self.apellido_usuario} - {self.rol_usuario}"
+        return f"{self.id} | {self.nombre_usuario} {self.apellido_usuario}"

@@ -120,7 +120,10 @@ DATABASES = {
         'USER': 'postgres',  # Uso de la conexión
         'PASSWORD': 'Passw3rd+',  # Contraseña de la conexión
         'HOST': 'localhost',  # Hostname o IP del servidor PostgreSQL
-        'PORT': 5432  # Porta que tu programa tiene habilitada para la conexión a PostgreSQL.
+        'PORT': '5432',  # Porta que tu programa tiene habilitada para la conexión a PostgreSQL.
+        'OPTIONS': {
+            'client_encoding': 'UTF8',
+        },
     }
 }
 

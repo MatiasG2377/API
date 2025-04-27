@@ -1,4 +1,9 @@
-# Este archivo contiene los modelos relacionados con la gestión de ventas en el sistema.
+from django.db import models
+from django.core.exceptions import ValidationError
+
+# Importa los modelos relacionados
+from .clientes import Cliente
+from .base import Usuario, Sucursal
 
 # Opciones de métodos de pago para ventas y abonos
 # Define los tipos de pago válidos: Efectivo, Transferencia, Tarjeta y Crédito empresarial
@@ -19,7 +24,7 @@ class Venta(models.Model):
     sucursal_venta = models.ForeignKey(Sucursal, on_delete=models.SET_NULL, null=True)
     fecha_venta = models.DateTimeField(auto_now_add=True)
     total_venta = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    metodo_venta = models.CharField(max_length=255, blank=True, null=True)
+    metodo_venta = models.CharField(max_length=255, blank=True, null=True, choices=METODO_PAGO_CHOICES, default='Efectivo')
 
     class Meta:
         indexes = [
